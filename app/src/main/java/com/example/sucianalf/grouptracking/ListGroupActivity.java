@@ -74,7 +74,9 @@ public class ListGroupActivity extends AppCompatActivity {
             startTrackerService();
         } else {
             ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION,
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE},
                     PERMISSIONS_REQUEST);
         }
 
@@ -112,10 +114,15 @@ public class ListGroupActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[]
             grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST && grantResults.length == 1
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        if (requestCode == PERMISSIONS_REQUEST && grantResults.length == 3
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED
+                && grantResults[2] == PackageManager.PERMISSION_GRANTED) {
             // Start the service when the permission is granted
             startTrackerService();
+        } else {
+            Toast.makeText(this, "Izinkan aplikasi untuk melanjutkan penggunaan",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 

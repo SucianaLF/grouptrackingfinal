@@ -2,9 +2,10 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:fillViewport="true"
     android:overScrollMode="never"
-    android:scrollbars="none" >
+    android:scrollbars="none">
 
     <RelativeLayout
         android:layout_width="fill_parent"
@@ -33,6 +34,14 @@
                 android:textColor="@color/white_greyish"
                 android:textSize="25sp"
                 android:textStyle="bold" />
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profilePicture"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:src="@drawable/user"
+                android:layout_gravity="center_horizontal"
+                app:civ_border_width="1dp" />
 
             <EditText
                 android:id="@+id/fullName"

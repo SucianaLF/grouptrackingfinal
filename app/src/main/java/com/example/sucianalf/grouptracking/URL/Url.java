@@ -23,7 +23,7 @@ public class Url {
         public final static String SET_DEST = URL+"tracking/setDestination/";
         public final static String REMOVE_DEST = URL+"tracking/removeDestination/";
         public final static String GET_PROFIL = URL+"tracking/profile/username/";
-        public final static String EDIT_PROFIL = URL+"tracking/edit_profile/";
+        public final static String EDIT_PROFIL = URL+"tracking/edit_profil/";
 
 
     }

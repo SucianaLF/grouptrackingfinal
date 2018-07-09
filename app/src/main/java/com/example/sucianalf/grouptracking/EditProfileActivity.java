@@ -1,44 +1,62 @@
 package com.example.sucianalf.grouptracking;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.resource.bitmap.BitmapEncoder;
+import com.bumptech.glide.signature.StringSignature;
 import com.example.sucianalf.grouptracking.URL.Url;
 import com.example.sucianalf.grouptracking.util.SessionManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
 public class EditProfileActivity extends AppCompatActivity {
-    private EditText edtUserName,edtEmail,edtTlp,edtLocation,edtPassword,edtConfirmPassword;
+    private EditText edtUserName, edtEmail, edtTlp, edtLocation, edtPassword, edtConfirmPassword;
     private SessionManager session;
     private Button btnEditProfil;
+    private CircleImageView profilePictureImageView;
+    private final int PICK_IMAGE = 500;
+    private Bitmap bitmapProfilePicture;
+    private String encodedProfilePicture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_profile);
 
-        edtUserName=(EditText)findViewById(R.id.fullName);
-        edtEmail=(EditText)findViewById(R.id.userEmailId);
-        edtTlp=(EditText)findViewById(R.id.mobileNumber);
-        edtLocation=(EditText)findViewById(R.id.location);
-        edtPassword=(EditText)findViewById(R.id.password);
+        edtUserName = (EditText) findViewById(R.id.fullName);
+        edtEmail = (EditText) findViewById(R.id.userEmailId);
+        edtTlp = (EditText) findViewById(R.id.mobileNumber);
+        edtLocation = (EditText) findViewById(R.id.location);
+        edtPassword = (EditText) findViewById(R.id.password);
         btnEditProfil = findViewById(R.id.editProfilBtn);
+        profilePictureImageView = findViewById(R.id.profilePicture);
 
         session = new SessionManager(getApplicationContext());
         edtUserName.setText(session.getUsername());
@@ -55,14 +73,24 @@ public class EditProfileActivity extends AppCompatActivity {
                 editProfil();
             }
         });
+
+        getProfilePicture();
+
+        profilePictureImageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                moveToMedia();
+            }
+        });
     }
 
-    private void editProfil(){
-        final String username=edtUserName.getText().toString();
-        final String email=edtEmail.getText().toString();
-        final String tlp=edtTlp.getText().toString();
-        final String location=edtLocation.getText().toString();
-        final String password=edtPassword.getText().toString();
+    private void editProfil() {
+
+        final String username = edtUserName.getText().toString();
+        final String email = edtEmail.getText().toString();
+        final String tlp = edtTlp.getText().toString();
+        final String location = edtLocation.getText().toString();
+        final String password = edtPassword.getText().toString();
 
         String tag_string_req = "req_register";
         StringRequest strReq = new StringRequest(Request.Method.POST,
@@ -73,7 +101,7 @@ public class EditProfileActivity extends AppCompatActivity {
                 try {
                     JSONObject jObj = new JSONObject(response);
                     String status = jObj.getString("status").toString().trim();
-                    if(status.equals("Success")){
+                    if (status.equals("Success")) {
                         Log.d("masuk ke get value", " >>>>>>>>> OK!");
                         Toast.makeText(getApplicationContext(), "Profile successfully Updated!", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(
@@ -108,12 +136,53 @@ public class EditProfileActivity extends AppCompatActivity {
                 params.put("no_telp", tlp);
                 params.put("password", password);
                 params.put("alamat", location);
-                Log.d("param response >>>>>>",params.toString());
+                params.put("image_user", encodedProfilePicture);
+                Log.d("param response >>>>>>", params.toString());
                 return params;
             }
         };
         AppController.getInstance().addToRequestQueue(strReq, tag_string_req);
     }
 
+    private void getProfilePicture() {
 
+        Glide.with(this)
+                .load("http://sucianalf.web.id/image/nan.jpg")
+                .dontAnimate()
+                .placeholder(R.mipmap.ic_launcher_round)
+                .into(profilePictureImageView);
+
+    }
+
+    private void moveToMedia() {
+
+        Intent chooseImage = new Intent();
+        chooseImage.setType("image/*");
+        chooseImage.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(chooseImage, "Select Picture"), PICK_IMAGE);
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == PICK_IMAGE && resultCode == RESULT_OK) {
+            Uri image = data.getData();
+
+            try {
+
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), image);
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream.toByteArray();
+                encodedProfilePicture = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                profilePictureImageView.setImageBitmap(bitmap);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } else if (requestCode == PICK_IMAGE && resultCode == RESULT_CANCELED) {
+            Toast.makeText(this, "Proses gagal", Toast.LENGTH_SHORT).show();
+        }
+    }
 }
